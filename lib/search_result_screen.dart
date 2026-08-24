@@ -17,7 +17,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   List<CartModel> filteredProducts = [];
 
   final List<CartModel> products = [
-    // 👟 Shoes
+   
     CartModel(
       id: '1',
       itemName: 'Nike Air Force 1',
