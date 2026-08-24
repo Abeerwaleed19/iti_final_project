@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "538154948035",
+    "project_id": "iti-final-project-f738b",
+    "storage_bucket": "iti-final-project-f738b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:538154948035:android:c91327ad3b919382181976",
+        "android_client_info": {
+          "package_name": "com.abeer.itiproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "538154948035-9dhbr9en6nn7g8otis27s354qpgqs2tk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.abeer.itiproject",
+            "certificate_hash": "7a81df2a0e4baa22fc6633792e01a35d0bc87ab7"
+          }
+        },
+        {
+          "client_id": "538154948035-pfl0uecgd5n3a2cb4p5phqegclknh28h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBi81GtUhxVLwzmYGhLLXXzGH9I60q6JsI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "538154948035-pfl0uecgd5n3a2cb4p5phqegclknh28h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
