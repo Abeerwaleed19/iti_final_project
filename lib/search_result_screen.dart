@@ -1,241 +1,109 @@
 import 'package:flutter/material.dart';
-import 'model/cart_model.dart';
-import 'product_card.dart';
+import 'search_result_screen.dart';
 
-class SearchResultScreen extends StatefulWidget {
-  final String searchText;
-
-  const SearchResultScreen({super.key, required this.searchText});
-
+class SearchScreen extends StatefulWidget {
+  const SearchScreen({super.key});
   @override
-  State<SearchResultScreen> createState() => _SearchResultScreenState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchResultScreenState extends State<SearchResultScreen> {
-  late TextEditingController searchController;
-
-  List<CartModel> filteredProducts = [];
-
-  final List<CartModel> products = [
-   
-    CartModel(
-      id: '1',
-      itemName: 'Nike Air Force 1',
-      price: '430',
-      image: 'assets/images/black.jpg',
-    ),
-
-    CartModel(
-      id: '2',
-      itemName: 'Nike Pink Air Max',
-      price: '400',
-      image: 'assets/images/pink.jpg',
-    ),
-
-    CartModel(
-      id: '3',
-      itemName: 'Nike Grey Runner',
-      price: '400',
-      image: 'assets/images/gray.jpg',
-    ),
-
-    CartModel(
-      id: '4',
-      itemName: 'Nike Blue Air Max',
-      price: '430',
-      image: 'assets/images/blue.jpg',
-    ),
-
-    CartModel(
-      id: '5',
-      itemName: 'Nike Shoes',
-      price: '350',
-      image: 'assets/images/Nike Shoes.jpg',
-    ),
-
-    CartModel(
-      id: '6',
-      itemName: 'Nike Red Runner',
-      price: '500',
-      image: 'assets/images/red.jpg',
-    ),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-
-    searchController = TextEditingController(text: widget.searchText);
-
-    filterProducts(widget.searchText);
-  }
-
-  void filterProducts(String query) {
-    final searchQuery = query.toLowerCase().trim();
-
-    setState(() {
-      if (searchQuery.isEmpty) {
-        filteredProducts = [];
-        return;
-      }
-
-      if (searchQuery == 'shoes' || searchQuery == 'shoe') {
-        filteredProducts = products.where((product) {
-          return product.itemName.toLowerCase().contains('nike');
-        }).toList();
-
-        return;
-      }
-
-      filteredProducts = products.where((product) {
-        final itemName = product.itemName.toLowerCase();
-
-        return itemName.contains(searchQuery);
-      }).toList();
-    });
+class _SearchScreenState extends State<SearchScreen> {
+  final TextEditingController searchController = TextEditingController();
+  void searchProduct() {
+    String query = searchController.text
+        .trim(); // Get the search query from the TextField
+    if (query.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchResultScreen(searchText: query),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 30),
-
+            SizedBox(height: 30),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 21),
-
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-
-                    icon: const Icon(Icons.arrow_back),
-                  ),
-
                   Expanded(
                     child: TextField(
                       controller: searchController,
-
-                      onChanged: (value) {
-                        filterProducts(value);
-
-                        setState(() {});
-                      },
-
+                      autofocus: true,
                       textInputAction: TextInputAction.search,
-
+                      onSubmitted: (value) {
+                        searchProduct();
+                      },
                       decoration: InputDecoration(
-                        hintText: 'Search',
-
-                        prefixIcon: const Icon(Icons.search, size: 20),
-
+                        hintText: "Search",
+                        prefixIcon: Icon(Icons.search, size: 20),
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.close, size: 18),
-
                           onPressed: () {
                             searchController.clear();
-
-                            filterProducts('');
-
-                            setState(() {});
                           },
+                          icon: Icon(Icons.close, size: 18),
                         ),
-
-                        filled: true,
-
-                        fillColor: const Color(0xffF8F7F7),
-
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-
-                          borderSide: BorderSide.none,
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade400),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF577CD9),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                children: [
-                  Expanded(
+                  SizedBox(width: 10),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
                     child: Text(
-                      'Results for "${searchController.text}"',
-
-                      style: const TextStyle(
+                      "Cancel",
+                      style: TextStyle(
+                        color: Color(0xFF0E0AB1),
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
-
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-
-                  const SizedBox(width: 10),
-
-                  Text(
-                    '${filteredProducts.length} Results Found',
-
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6055D8),
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
+            Spacer(),
 
-            const SizedBox(height: 15),
-
-            Expanded(
-              child: filteredProducts.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No products found',
-
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
-                      ),
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 15,
-                        vertical: 5,
-                      ),
-
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-
-                            crossAxisSpacing: 12,
-
-                            mainAxisSpacing: 15,
-
-                            childAspectRatio: 0.72,
-                          ),
-
-                      itemCount: filteredProducts.length,
-
-                      itemBuilder: (context, index) {
-                        final product = filteredProducts[index];
-
-                        return ProductCard(product: product);
-                      },
-                    ),
+            Container(
+              height: 65,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                border: Border(top: BorderSide(color: Colors.grey.shade300)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Icon(Icons.home_outlined, color: Colors.grey.shade600),
+                  Icon(Icons.search, color: Color(0xFF6055D8), size: 30),
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    color: Colors.grey.shade600,
+                  ),
+                  Icon(Icons.person_outline, color: Colors.grey.shade600),
+                ],
+              ),
             ),
           ],
         ),
@@ -246,7 +114,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   @override
   void dispose() {
     searchController.dispose();
-
     super.dispose();
   }
 }
