@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../utills/snackbar_service.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 class FirebaseAuthService {
   static Future<bool> createAccount(
     String email,
@@ -14,7 +14,17 @@ class FirebaseAuthService {
           .createUserWithEmailAndPassword(email: email, password: password);
       await credential.user!.updateDisplayName(name);
 
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(credential.user!.uid)
+          .set({
+        "name": name,
+        "email": email,
+        "createdAt": FieldValue.serverTimestamp(),
+      });
+
       return Future.value(true);
+
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         BotToastService.showErrorMessage("The password provided is too weak.");
@@ -56,15 +66,31 @@ class FirebaseAuthService {
   }
 
   static final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
-  static Future<UserCredential> signInWithGoogle() async {
-    await _googleSignIn.initialize(
-      serverClientId: dotenv.env["CLIENT_SERVER_ID"],
-    );
-    final GoogleSignInAccount result = await _googleSignIn.authenticate();
-    final googleAuth = result.authentication;
-    final credentials = GoogleAuthProvider.credential(
-      idToken: googleAuth.idToken,
-    );
-    return await FirebaseAuth.instance.signInWithCredential(credentials);
-  }
+    static Future<UserCredential> signInWithGoogle() async {
+      await _googleSignIn.initialize(
+        serverClientId: dotenv.env["CLIENT_SERVER_ID"],
+      );
+      final GoogleSignInAccount result = await _googleSignIn.authenticate();
+      final googleAuth = result.authentication;
+      final credentials = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credentials,
+      );
+
+      final userDoc = FirebaseFirestore.instance
+          .collection("users")
+          .doc(userCredential.user!.uid);
+      final docSnapshot = await userDoc.get();
+
+      if (!docSnapshot.exists) {
+        await userDoc.set({
+          "name": userCredential.user!.displayName ?? "",
+          "email": userCredential.user!.email ?? "",
+          "createdAt": FieldValue.serverTimestamp(),
+        });
+      }
+      return userCredential;
+    }
 }
