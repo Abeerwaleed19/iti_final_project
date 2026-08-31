@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'model/cart_model.dart';
 import 'network/cartService.dart';
+import 'network/favorite service.dart';
 import 'wedgits/soldItems.dart';
 import 'checkoutScreen.dart';
 
 class cartScreen extends StatelessWidget {
   cartScreen({super.key});
   final CartService _cartService = CartService();
-
+  final FavoriteService _favoriteService = FavoriteService();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
