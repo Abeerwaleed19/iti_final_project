@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:iti_project_final/model/cart_model.dart';
 
-class ProductCard extends StatefulWidget {
+class ProductCardscreen extends StatefulWidget {
   final CartModel product;
-  const ProductCard({super.key, required this.product});
+  const  ProductCardscreen ({super.key, required this.product});
   @override
-  State<ProductCard> createState() => _ProductCardState();
+  State< ProductCardscreen > createState() => _ProductCardState();
 }
-
-class _ProductCardState extends State<ProductCard> {
+class _ProductCardState extends State< ProductCardscreen> {
   bool isFavorite = false;
   bool isAdded = false;
   @override

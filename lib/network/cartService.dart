@@ -15,6 +15,13 @@ class CartService {
         .collection("cart");
   }
 
+  CollectionReference<Map<String, dynamic>> _ordersRef(String uid) {
+    return FirebaseFirestore.instance
+        .collection("users")
+        .doc(uid)
+        .collection("orders");
+  }
+
   Future<void> addToCart({
     required BuildContext context,
     required CartModel product,
@@ -35,6 +42,7 @@ class CartService {
         "size": size,
         "createdAt": DateTime.now(),
       });
+
       if (context.mounted) {
         showMySnackBar(
           msg: "Added to cart",
@@ -55,8 +63,7 @@ class CartService {
 
   Stream<List<CartModel>> getCartItems() {
     final uid = _uid;
-    if (uid == null) return  Stream.empty();
-
+    if (uid == null) return Stream.empty();
     return _cartRef(uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
@@ -105,6 +112,80 @@ class CartService {
           context: context,
         );
       }
+    }
+  }
+
+  double parsePrice(String price) {
+    final cleaned = price.replaceAll(RegExp(r'[^0-9.]'), '');
+    return double.tryParse(cleaned) ?? 0.0;
+  }
+  double calculateTotal(List<CartModel> items) {
+    double total = 0;
+    for (final item in items) {
+      total += parsePrice(item.price);
+    }
+    return total;
+  }
+  Future<bool> placeOrder({
+    required BuildContext context,
+    required List<CartModel> cartItems,
+    required String name,
+    required String phone,
+    required String address,
+    required String paymentMethod,
+  }) async {
+    final uid = _uid;
+    if (uid == null) return false;
+    if (cartItems.isEmpty) return false;
+
+    try {
+      final total = calculateTotal(cartItems);
+      final orderRef = _ordersRef(uid).doc();
+
+      await orderRef.set({
+        "id": orderRef.id,
+        "items": cartItems
+            .map(
+              (item) => {
+            "id": item.id,
+            "itemName": item.itemName,
+            "image": item.image,
+            "price": item.price,
+            "size": item.size,
+          },
+        )
+            .toList(),
+        "total": total,
+        "name": name,
+        "phone": phone,
+        "address": address,
+        "paymentMethod": paymentMethod,
+        "status": "pending",
+        "createdAt": DateTime.now(),
+      });
+      final batch = FirebaseFirestore.instance.batch();
+      for (final item in cartItems) {
+        batch.delete(_cartRef(uid).doc(item.id));
+      }
+      await batch.commit();
+
+      if (context.mounted) {
+        showMySnackBar(
+          msg: "The order has been successfully confirmed.",
+          type: AnimatedSnackBarType.success,
+          context: context,
+        );
+      }
+      return true;
+    } on FirebaseException catch (e) {
+      if (context.mounted) {
+        showMySnackBar(
+          msg: e.message ?? "An error occurred while processing the request.",
+          type: AnimatedSnackBarType.error,
+          context: context,
+        );
+      }
+      return false;
     }
   }
 }

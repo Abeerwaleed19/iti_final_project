@@ -3,6 +3,7 @@ import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'cartScreen.dart';
 import 'model/cart_model.dart';
 import 'network/cartService.dart';
+import 'network/favorite service.dart';
 import 'snackbar.dart';
 
 class detailsScreen extends StatefulWidget {
@@ -14,7 +15,8 @@ class detailsScreen extends StatefulWidget {
 }
 
 class _detailsScreenState extends State<detailsScreen> {
-  String ? selectedSize;
+  final FavoriteService _favoriteService = FavoriteService();
+  String? selectedSize;
   final List<String> sizes = ["8", "10", "38", "40"];
   bool isAdding = false;
   final CartService _cartService = CartService();
@@ -72,27 +74,35 @@ class _detailsScreenState extends State<detailsScreen> {
                   ),
                 ),
               ),
+
               Positioned(
                 top: 64,
                 right: 20,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      widget.items.isFavorite = !widget.items.isFavorite;
-                    });
+                child: StreamBuilder<bool>(
+                  stream: _favoriteService.isFavoriteStream(widget.items.id),
+                  builder: (context, snapshot) {
+                    final isFavorite = snapshot.data ?? false;
+
+                    return GestureDetector(
+                      onTap: () async {
+                        await _favoriteService.toggleFavorite(
+                          context: context,
+                          product: widget.items,
+                          isCurrentlyFavorite: isFavorite,
+                        );
+                      },
+                      child: CircleAvatar(
+                        backgroundColor: const Color(0xffD3D0D0),
+                        child: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite
+                              ? Colors.red
+                              : const Color(0xff7C7979),
+                          size: 23,
+                        ),
+                      ),
+                    );
                   },
-                  child: CircleAvatar(
-                    backgroundColor: Color(0xffD3D0D0),
-                    child: Icon(
-                      widget.items.isFavorite
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: widget.items.isFavorite
-                          ? Colors.red
-                          : Color(0xff7C7979),
-                      size: 23,
-                    ),
-                  ),
                 ),
               ),
             ],
