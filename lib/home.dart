@@ -6,7 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:iti_project_final/profile_screen.dart';
 import 'cartScreen.dart';
 import 'details.dart';
+import 'favoritescreen.dart';
 import 'model/cart_model.dart';
+import 'network/favorite service.dart';
 import 'product-list.dart';
 import 'search_screen.dart';
 
@@ -417,17 +419,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: const Color(0xffF8F7F7),
-
         type: BottomNavigationBarType.fixed,
-
         currentIndex: currentIndex,
-
         selectedItemColor: const Color(0xFF4A148C),
-
         unselectedItemColor: Colors.grey,
-
         showSelectedLabels: false,
-
         showUnselectedLabels: false,
 
         onTap: (index) async {
@@ -435,18 +431,29 @@ class _HomeScreenState extends State<HomeScreen> {
             currentIndex = index;
           });
 
+          // Search
           if (index == 1) {
             openSearchScreen();
           }
 
+          // Favorites
           if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const Favoritesscreen()),
+            );
+          }
+
+          // Cart
+          if (index == 3) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => cartScreen()),
             );
           }
 
-          if (index == 3) {
+          // Profile
+          if (index == 4) {
             await openProfileScreen();
           }
         },
@@ -459,6 +466,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_border),
+            activeIcon: Icon(Icons.favorite),
+            label: '',
+          ),
 
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_bag_outlined),
@@ -578,16 +591,22 @@ class BannerDot extends StatelessWidget {
   }
 }
 
+
 class HomeProductCard extends StatefulWidget {
   final CartModel product;
 
-  const HomeProductCard({super.key, required this.product});
+  const HomeProductCard({
+    super.key,
+    required this.product,
+  });
 
   @override
   State<HomeProductCard> createState() => _HomeProductCardState();
 }
 
 class _HomeProductCardState extends State<HomeProductCard> {
+  final FavoriteService _favoriteService = FavoriteService();
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -595,10 +614,16 @@ class _HomeProductCardState extends State<HomeProductCard> {
         await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => detailsScreen(items: widget.product),
+            builder: (context) =>
+                detailsScreen(
+                  items: widget.product,
+                ),
           ),
         );
-        setState(() {});
+
+        if (mounted) {
+          setState(() {});
+        }
       },
       child: Container(
         height: 175,
@@ -606,7 +631,10 @@ class _HomeProductCardState extends State<HomeProductCard> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
-            BoxShadow(color: Colors.grey.withOpacity(0.15), blurRadius: 6),
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.15),
+              blurRadius: 6,
+            ),
           ],
         ),
         child: Column(
@@ -615,7 +643,9 @@ class _HomeProductCardState extends State<HomeProductCard> {
               child: Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(15),
+                    ),
                     child: SizedBox.expand(
                       child: Image.asset(
                         widget.product.image,
@@ -623,30 +653,43 @@ class _HomeProductCardState extends State<HomeProductCard> {
                       ),
                     ),
                   ),
+
+                  // Favorite button
                   Positioned(
                     top: 0,
                     right: 0,
-                    child: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          widget.product.isFavorite =
-                              !widget.product.isFavorite;
-                        });
-                      },
-                      icon: Icon(
-                        widget.product.isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: widget.product.isFavorite
-                            ? Colors.red
-                            : Colors.grey,
-                        size: 24,
+                    child: StreamBuilder<bool>(
+                      stream: _favoriteService.isFavoriteStream(
+                        widget.product.id,
                       ),
+                      builder: (context, snapshot) {
+                        final isFavorite = snapshot.data ?? false;
+
+                        return IconButton(
+                          onPressed: () async {
+                            await _favoriteService.toggleFavorite(
+                              context: context,
+                              product: widget.product,
+                              isCurrentlyFavorite: isFavorite,
+                            );
+                          },
+                          icon: Icon(
+                            isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: isFavorite
+                                ? Colors.red
+                                : Colors.grey,
+                            size: 24,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
@@ -659,7 +702,9 @@ class _HomeProductCardState extends State<HomeProductCard> {
                 ),
               ),
             ),
+
             const SizedBox(height: 4),
+
             Text(
               widget.product.price,
               style: const TextStyle(
