@@ -5,6 +5,8 @@ import '../snackbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'favorite service.dart';
+
 class CartService {
   String? get _uid => FirebaseAuth.instance.currentUser?.uid;
 
@@ -42,6 +44,13 @@ class CartService {
         "size": size,
         "createdAt": DateTime.now(),
       });
+      final favoriteService = FavoriteService();
+
+      await favoriteService.copyFavoriteToCartId(
+        productId: product.id,
+        cartId: docRef.id,
+        product: product,
+      );
 
       if (context.mounted) {
         showMySnackBar(
