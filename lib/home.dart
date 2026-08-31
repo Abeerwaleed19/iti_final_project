@@ -614,12 +614,12 @@ class _HomeProductCardState extends State<HomeProductCard> {
             Expanded(
               child: Stack(
                 children: [
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                    child: SizedBox.expand(
                       child: Image.asset(
                         widget.product.image,
-                        fit: BoxFit.contain,
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
