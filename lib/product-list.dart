@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'model/cart_model.dart';
+import 'network/favorite service.dart';
 
 class ProductsScreen extends StatelessWidget {
   const ProductsScreen({super.key});
@@ -76,17 +77,22 @@ class ProductsScreen extends StatelessWidget {
   }
 }
 
+
 class ProductCard extends StatefulWidget {
   final CartModel product;
 
-  const ProductCard({super.key, required this.product});
+  const ProductCard({
+    super.key,
+    required this.product,
+  });
 
   @override
   State<ProductCard> createState() => _ProductCardState();
 }
 
 class _ProductCardState extends State<ProductCard> {
-  bool isFavorite = false;
+  final FavoriteService _favoriteService = FavoriteService();
+
   bool isAdded = false;
 
   @override
@@ -96,10 +102,12 @@ class _ProductCardState extends State<ProductCard> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.15), blurRadius: 6),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 6,
+          ),
         ],
       ),
-
       child: Column(
         children: [
           Expanded(
@@ -110,24 +118,42 @@ class _ProductCardState extends State<ProductCard> {
                     top: Radius.circular(15),
                   ),
                   child: SizedBox.expand(
-                    child: Image.asset(widget.product.image, fit: BoxFit.cover),
+                    child: Image.asset(
+                      widget.product.image,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
 
-                // Heart
+                // Favorite
                 Positioned(
                   top: 2,
                   right: 2,
-                  child: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        isFavorite = !isFavorite;
-                      });
-                    },
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.black,
+                  child: StreamBuilder<bool>(
+                    stream: _favoriteService.isFavoriteStream(
+                      widget.product.id,
                     ),
+                    builder: (context, snapshot) {
+                      final isFavorite = snapshot.data ?? false;
+
+                      return IconButton(
+                        onPressed: () async {
+                          await _favoriteService.toggleFavorite(
+                            context: context,
+                            product: widget.product,
+                            isCurrentlyFavorite: isFavorite,
+                          );
+                        },
+                        icon: Icon(
+                          isFavorite
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: isFavorite
+                              ? Colors.red
+                              : Colors.black,
+                        ),
+                      );
+                    },
                   ),
                 ),
 
@@ -160,7 +186,9 @@ class _ProductCardState extends State<ProductCard> {
               ],
             ),
           ),
-          SizedBox(height: 10),
+
+          const SizedBox(height: 10),
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Align(
@@ -178,12 +206,17 @@ class _ProductCardState extends State<ProductCard> {
           const SizedBox(height: 5),
 
           Padding(
-            padding: const EdgeInsets.only(left: 10, bottom: 12),
+            padding: const EdgeInsets.only(
+              left: 10,
+              bottom: 12,
+            ),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 widget.product.price,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -192,3 +225,4 @@ class _ProductCardState extends State<ProductCard> {
     );
   }
 }
+
