@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../model/cart_model.dart';
 import '../network/cartService.dart';
+
 class ProductItem extends StatelessWidget {
   const ProductItem({super.key, required this.items});
   final CartModel items;
@@ -9,8 +10,7 @@ class ProductItem extends StatelessWidget {
     final CartService cartService = CartService();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child:
-      Dismissible(
+      child: Dismissible(
         key: Key(items.id),
         direction: DismissDirection.endToStart,
         background: Container(
@@ -23,7 +23,6 @@ class ProductItem extends StatelessWidget {
           await cartService.removeFromCart(context: context, id: items.id);
         },
         child: Container(
-          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Color(0xffF8F7F7),
             borderRadius: BorderRadius.circular(20),
@@ -34,8 +33,8 @@ class ProductItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 child: Image.asset(
                   items.image,
-                  height: 90,
-                  width: 90,
+                  width: 110,
+                  height: 110,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -77,7 +76,10 @@ class ProductItem extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () async {
-                  await cartService.removeFromCart(context: context, id: items.id);
+                  await cartService.removeFromCart(
+                    context: context,
+                    id: items.id,
+                  );
                 },
                 icon: const Icon(Icons.delete_forever, color: Colors.red),
               ),
