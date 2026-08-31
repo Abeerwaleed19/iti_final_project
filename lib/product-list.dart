@@ -105,13 +105,12 @@ class _ProductCardState extends State<ProductCard> {
           Expanded(
             child: Stack(
               children: [
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Image.asset(
-                      widget.product.image,
-                      fit: BoxFit.contain,
-                    ),
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(15),
+                  ),
+                  child: SizedBox.expand(
+                    child: Image.asset(widget.product.image, fit: BoxFit.cover),
                   ),
                 ),
 
@@ -161,7 +160,7 @@ class _ProductCardState extends State<ProductCard> {
               ],
             ),
           ),
-
+          SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Align(
