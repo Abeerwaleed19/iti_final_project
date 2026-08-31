@@ -1,32 +1,41 @@
 import 'package:flutter/material.dart';
 import '../model/cart_model.dart';
 import '../network/cartService.dart';
+import '../network/favorite service.dart';
 
 class ProductItem extends StatelessWidget {
   const ProductItem({super.key, required this.items});
+
   final CartModel items;
+
   @override
   Widget build(BuildContext context) {
     final CartService cartService = CartService();
+    final FavoriteService favoriteService = FavoriteService();
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Dismissible(
         key: Key(items.id),
         direction: DismissDirection.endToStart,
+
         background: Container(
           color: Colors.red,
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 20),
-          child: Icon(Icons.delete, color: Colors.white),
+          child: const Icon(Icons.delete, color: Colors.white),
         ),
+
         onDismissed: (_) async {
           await cartService.removeFromCart(context: context, id: items.id);
         },
+
         child: Container(
           decoration: BoxDecoration(
-            color: Color(0xffF8F7F7),
+            color: const Color(0xffF8F7F7),
             borderRadius: BorderRadius.circular(20),
           ),
+
           child: Row(
             children: [
               ClipRRect(
@@ -39,7 +48,7 @@ class ProductItem extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
 
               Expanded(
                 child: Column(
@@ -47,25 +56,29 @@ class ProductItem extends StatelessWidget {
                   children: [
                     Text(
                       "ItemName : ${items.itemName}",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Color(0xff1E1B17),
                       ),
                     ),
-                    SizedBox(height: 5),
+
+                    const SizedBox(height: 5),
+
                     Text(
                       "price : ${items.price}",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Color(0xff6055D8),
                       ),
                     ),
-                    SizedBox(height: 5),
+
+                    const SizedBox(height: 5),
+
                     Text(
                       "size : ${items.size ?? ''}",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.pink,
@@ -83,18 +96,26 @@ class ProductItem extends StatelessWidget {
                 },
                 icon: const Icon(Icons.delete_forever, color: Colors.red),
               ),
-              IconButton(
-                onPressed: () async {
-                  await cartService.editFavorite(
-                    context: context,
-                    id: items.id,
-                    newValue: !items.isFavorite,
+              
+              StreamBuilder<bool>(
+                stream: favoriteService.isFavoriteStream(items.id),
+                builder: (context, snapshot) {
+                  final isFavorite = snapshot.data ?? false;
+
+                  return IconButton(
+                    onPressed: () async {
+                      await favoriteService.toggleFavorite(
+                        context: context,
+                        product: items,
+                        isCurrentlyFavorite: isFavorite,
+                      );
+                    },
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.grey,
+                    ),
                   );
                 },
-                icon: Icon(
-                  items.isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: items.isFavorite ? Colors.red : Colors.grey,
-                ),
               ),
             ],
           ),
