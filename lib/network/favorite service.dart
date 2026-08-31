@@ -103,4 +103,27 @@ class FavoriteService {
           .toList(),
     );
   }
+
+  Future<bool> copyFavoriteToCartId({
+    required String productId,
+    required String cartId,
+    required CartModel product,
+  }) async {
+    final uid = _uid;
+    if (uid == null) return false;
+
+    final oldFavorite = await _favRef(uid).doc(productId).get();
+
+    if (!oldFavorite.exists) {
+      return false;
+    }
+
+    final data = product.toMap();
+    data['isFavorite'] = true;
+    data['createdAt'] = DateTime.now();
+
+    await _favRef(uid).doc(cartId).set(data);
+
+    return true;
+  }
 }
